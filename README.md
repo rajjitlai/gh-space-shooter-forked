@@ -43,6 +43,8 @@ Then display it in your README:
 ![My GitHub Game](game.gif)
 ```
 
+> **Note:** By default, the action amends the previous commit if it only contains the game file with the same commit message. This prevents repository bloat from daily commits. Set `no-amend: true` to disable this behavior.
+
 **Action Inputs:**
 - `github-token` (required): GitHub token for fetching contributions
 - `username` (optional): Username to generate game for (defaults to repo owner)
