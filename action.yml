@@ -71,10 +71,33 @@ runs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        if [ -n "${{ inputs.write-dataurl-to }}" ]; then
-          git add ${{ inputs.write-dataurl-to }}
-        else
-          git add ${{ inputs.output-path }}
+
+        OUTPUT_PATH="${{ inputs.output-path }}"
+        COMMIT_MSG="${{ inputs.commit-message }}"
+        NO_AMEND="${{ inputs.no-amend }}"
+
+        git add "$OUTPUT_PATH"
+
+        # Check if we should amend the previous commit
+        SHOULD_AMEND="false"
+        if [ "$NO_AMEND" != "true" ]; then
+          # Get last commit message (first line only)
+          LAST_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "")
+          # Get files changed in last commit (relative paths, no empty lines)
+          LAST_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | grep -v '^$' || echo "")
+
+          # Check if message matches and only output file was changed
+          if [ "$LAST_MSG" = "$COMMIT_MSG" ] && [ "$LAST_FILES" = "$OUTPUT_PATH" ]; then
+            SHOULD_AMEND="true"
+          fi
         fi
-        git diff --staged --quiet || git commit -m "${{ inputs.commit-message }}"
-        git push
+
+        if [ "$SHOULD_AMEND" = "true" ]; then
+          echo "Amending previous commit (same message and file)"
+          git commit --amend --no-edit
+          git push --force-with-lease
+        else
+          echo "Creating new commit"
+          git diff --staged --quiet || git commit -m "$COMMIT_MSG"
+          git push
+        fi
