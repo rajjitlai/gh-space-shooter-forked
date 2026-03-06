@@ -31,11 +31,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: czl9707/gh-space-shooter@v1
+      - uses: czl9707/gh-space-shooter@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-path: 'game.gif'
-          # write-dataurl-to: 'README.md'   # for dataurl generation.
           strategy: 'random'
 ```
 
